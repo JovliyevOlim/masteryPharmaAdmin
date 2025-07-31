@@ -1,6 +1,6 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 
-export const baseUrl = 'http://192.168.1.50:8090/api';
+export const baseUrl = 'https://mastery-pharma.uz/api';
 axios.defaults.baseURL = baseUrl;
 
 const getToken = (): string | null => {
