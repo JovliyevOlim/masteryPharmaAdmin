@@ -9,6 +9,8 @@ import AddCourses from './AddCourses.tsx';
 import { useTranslation } from 'react-i18next';
 import { formatNumber } from '../../helpers/utils.ts';
 import { MdDelete, MdEdit } from 'react-icons/md';
+import { resetImageId } from '../../slices/files/reducer.ts';
+import Image from '../../components/Image.tsx';
 
 const Courses = () => {
   const { t, i18n } = useTranslation();
@@ -36,6 +38,7 @@ const Courses = () => {
   };
 
   useEffect(() => {
+    dispatch(resetImageId());
     dispatch(getAllCourses());
   }, [isAction]);
 
@@ -48,6 +51,15 @@ const Courses = () => {
       {
         key: 'teacherName',
         title: t('teacher'),
+      },
+      {
+        key: 'files',
+        title: t('image'),
+        render: (item: any) => (
+          <>
+            {item?.filesIds.length > 0 && <Image item={item} key={item.id} />}
+          </>
+        ),
       },
       {
         key: 'description',

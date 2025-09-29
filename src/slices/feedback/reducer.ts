@@ -1,5 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getAllFeedBacks, addNewFeedBack, approvedFeeback } from './thunk';
+import {
+  getAllFeedBacks,
+  addNewFeedBack,
+  approvedFeeback,
+  deleteFeedbacks,
+} from './thunk';
 
 interface initialState {
   error: string | null;
@@ -65,6 +70,21 @@ const sliceOptions = {
       state.isSuccess = false;
       state.isAction = !state.isAction;
     });
+
+    builder
+      .addCase(deleteFeedbacks.pending, (state: any) => {
+        state.loading = true;
+      })
+      .addCase(deleteFeedbacks.fulfilled, (state: any) => {
+        state.loading = false;
+        state.isSuccess = true;
+        state.isAction = !state.isAction;
+      })
+      .addCase(deleteFeedbacks.rejected, (state: any) => {
+        state.loading = false;
+        state.isSuccess = false;
+        state.isAction = !state.isAction;
+      });
   },
 };
 

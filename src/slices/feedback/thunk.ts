@@ -6,6 +6,7 @@ import {
   getAllFeedBacks as getAllFeedBacksApi,
   addNewFeedBacks as addNewFeedBacksApi,
   approvedFeedBack as approvedFeedBackApi,
+  deleteFeedbacks as deleteFeedbacksApi,
 } from '../../helpers/backend_helpers.ts';
 import { toast } from 'react-toastify';
 
@@ -42,6 +43,21 @@ export const approvedFeeback = createAsyncThunk<any, any>(
       const response = approvedFeedBackApi(feedbacks);
       const data = await response;
       // toast.success(i18next.t('added'), { autoClose: 3000 });
+      return data;
+    } catch (error) {
+      let message: any = error;
+      toast.error(message, { autoClose: 3000 });
+      return rejectWithValue(error);
+    }
+  },
+);
+export const deleteFeedbacks = createAsyncThunk(
+  'courses/deleteFeedbacks',
+  async (id: string, { rejectWithValue }) => {
+    try {
+      const response = deleteFeedbacksApi(id);
+      const data = await response;
+      toast.success(i18next.t('deleted'), { autoClose: 3000 });
       return data;
     } catch (error) {
       let message: any = error;

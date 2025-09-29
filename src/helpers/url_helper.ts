@@ -15,3 +15,8 @@ export const ADD_NEW_FEEDBACK = '/feedbacks';
 export const FEEDBACK_APPROVED = '/feedbacks/approve';
 export const GET_ALL_FEEDBACK = '/feedbacks/get';
 export const GET_APPROVED_FEEDBACK = '/feedbacks/approved';
+export const DELETE_FEEDBACK = '/feedbacks';
+
+//File
+export const FILE_UPLOAD = 'files/upload';
+export const GET_FILE = 'files';

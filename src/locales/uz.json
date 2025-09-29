@@ -46,5 +46,6 @@
   "yes": "Ha",
   "no": "Yo‘q",
   "confirmDelete": "Siz bu {{item}} o‘chirmoqchimisiz?",
-  "course": "kursni"
+  "course": "kursni",
+  "image": "Rasm"
 }

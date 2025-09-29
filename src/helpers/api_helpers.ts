@@ -1,9 +1,10 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 
 export const baseUrl = 'https://mastery-pharma.uz/api';
+// export const baseUrl = 'http://95.46.96.160:8081/api';
 axios.defaults.baseURL = baseUrl;
 
-const getToken = (): string | null => {
+export const getToken = (): string | null => {
   const authUser = localStorage.getItem('authUser');
   if (authUser) {
     try {
@@ -104,6 +105,16 @@ class APIClient {
     return axios.put(url, data);
   };
 
+  //file upload
+  fileUpload = (url: string, data: any): Promise<AxiosResponse> => {
+    return axios.post(url, data, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    });
+  };
+
   /**
    * Deletes data
    */
@@ -123,5 +134,6 @@ const getLoggedinUser = () => {
     return JSON.parse(user);
   }
 };
+
 
 export { APIClient, setAuthorization, getLoggedinUser };

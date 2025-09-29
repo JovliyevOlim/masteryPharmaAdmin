@@ -12,7 +12,11 @@ import StudentsReducer from './students/reducer.ts';
 // FeedBacks
 import FeedbackReducer from './feedback/reducer.ts';
 
+//File
+import FileUploadReducer from './files/reducer.ts';
+
 const rootReducer = combineReducers({
+  FileUpload: FileUploadReducer,
   Login: LoginReducer,
   Course: CoursesReducer,
   Students: StudentsReducer,

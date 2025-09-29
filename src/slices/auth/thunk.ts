@@ -1,5 +1,3 @@
-//Include Both Helper File with needed methods
-
 import { loginSuccess, logoutUserSuccess, apiError } from './reducer';
 import { postLogin } from '../../helpers/backend_helpers.ts';
 import { toast } from 'react-toastify';
@@ -48,7 +46,7 @@ export const loginUserOther = (user: any) => async (dispatch: any) => {
         dispatch(apiError(data));
       }
     }
-  } catch (error) {
+  } catch (error:any) {
     dispatch(apiError(error));
     toast.error(error, { autoClose: 3000 });
   }

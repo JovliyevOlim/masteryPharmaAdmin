@@ -30,3 +30,10 @@ export const addNewFeedBacks = (feedback: any) =>
 // approver feedbacks
 export const approvedFeedBack = (feedback: any) =>
   api.put(url.FEEDBACK_APPROVED + '/' + feedback, feedback);
+//delete feedbacks
+export const deleteFeedbacks = (feedback: any) =>
+  api.delete(url.DELETE_FEEDBACK + '/' + feedback);
+
+//file upload
+export const addFileUpload = (form: any) =>
+  api.fileUpload(url.FILE_UPLOAD, form);

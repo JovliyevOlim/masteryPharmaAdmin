@@ -4,11 +4,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import CustomTable from '../../components/Tables/CustomTable.tsx';
 import {
   approvedFeeback,
+  deleteFeedbacks,
   getAllFeedBacks,
 } from '../../slices/feedback/thunk.ts';
 import AddFeedBack from './AddFeedBack.tsx';
 import { useTranslation } from 'react-i18next';
 import { MdCancel, MdCheckCircle, MdDelete, MdEdit } from 'react-icons/md';
+import DeleteModal from '../../components/DeleteModal.tsx';
 
 const Index = () => {
   const { t } = useTranslation();
@@ -30,6 +32,7 @@ const Index = () => {
   };
 
   const deleteFunction = () => {
+    dispatch(deleteFeedbacks(editData.id));
     setModalDelete(false);
     setEditData(null);
   };
@@ -71,6 +74,12 @@ const Index = () => {
               <MdCancel />
             </button>
           )}
+          <button
+            onClick={() => onClickDelete(item)}
+            className="hover:text-danger"
+          >
+            <MdDelete />
+          </button>
         </div>
       ),
     },
@@ -97,6 +106,13 @@ const Index = () => {
         setModalOpen={setModal}
         item={editData}
         setItem={setEditData}
+      />
+      <DeleteModal
+        modalOpen={modalDelete}
+        setModalOpen={setModalDelete}
+        text={t('feedback')}
+        setItem={setEditData}
+        deleteFunction={deleteFunction}
       />
     </>
   );

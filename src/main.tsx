@@ -31,16 +31,14 @@ const root = ReactDOM.createRoot(
 const persistor = persistStore(store);
 
 root.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <React.Fragment>
-          <Router>
-            <ToastContainer />
-            <App />
-          </Router>
-        </React.Fragment>
-      </PersistGate>
-    </Provider>
-  </React.StrictMode>,
+  <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
+      <React.Fragment>
+        <Router>
+          <ToastContainer />
+          <App />
+        </Router>
+      </React.Fragment>
+    </PersistGate>
+  </Provider>,
 );

@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getAllStudents } from './thunk';
+import { getAllStudents } from './thunk.ts';
 
 interface initialState {
   error: string | null;
