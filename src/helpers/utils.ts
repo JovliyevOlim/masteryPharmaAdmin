@@ -49,7 +49,5 @@ export const getFileById = async (id: number): Promise<string> => {
     },
   });
 
-  console.log('Blob:', response);
-  console.log(URL.createObjectURL(response));
   return URL.createObjectURL(response);
 };

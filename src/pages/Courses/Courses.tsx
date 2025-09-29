@@ -57,7 +57,7 @@ const Courses = () => {
         title: t('image'),
         render: (item: any) => (
           <>
-            {item?.filesIds.length > 0 && <Image item={item} key={item.id} />}
+            {item?.filesIds?.length > 0 && <Image item={item} key={item.id} />}
           </>
         ),
       },
