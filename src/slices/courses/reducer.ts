@@ -27,7 +27,11 @@ export const initialState: initialState = {
 const sliceOptions = {
   name: 'courses',
   initialState,
-  reducers: {},
+  reducers: {
+    changeCourseLoading(state: any) {
+      state.loading = true;
+    },
+  },
   extraReducers: (builder: any) => {
     // get all courses
     builder
@@ -91,5 +95,7 @@ const sliceOptions = {
 };
 
 const userSlice = createSlice(sliceOptions);
+
+export const { changeCourseLoading } = userSlice.actions;
 
 export default userSlice.reducer;

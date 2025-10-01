@@ -43,11 +43,37 @@ const token = getToken();
 
 export const getFileById = async (id: number): Promise<string> => {
   const response: any = await axios.get(`${baseUrl}/files/${id}`, {
-    responseType: 'blob',
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
+  return response;
+};
 
-  return URL.createObjectURL(response);
+export const getImageUrl = (id: number) => {
+  return `${baseUrl}/files/download/${id}`;
+};
+
+export const truncateFileName = (name: string, maxLength: number = 20) => {
+  if (name?.length <= maxLength) return name;
+
+  const ext = name?.split('.').pop(); // kengaytma (pdf, docx, xlsx...)
+  const base = name?.substring(0, maxLength - (ext?.length || 0) - 3);
+
+  return `${base}...${ext}`;
+};
+export const getFileSizeInMB = (size: number) => {
+  return (size / (1024 * 1024)).toFixed(2);
+};
+export const fileSize = (base64Data: any, mimeType: string) => {
+  const byteCharacters = atob(base64Data); // base64 → binary
+  const byteNumbers = new Array(byteCharacters.length);
+
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: mimeType });
+  return blob.size;
 };

@@ -1,21 +1,27 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { addFileUpload } from './thunk.ts';
+import { addFileUpload, addPdfFileUpload } from './thunk.ts';
 
 interface initialState {
   error: string | null;
   loading: boolean;
   isAction: boolean;
   isSuccess: boolean;
+  isActionFilePdf: boolean;
+  isSuccessFilePdf: boolean;
   message: '';
-  imageId: string | null;
+  imageId: number | null;
+  fileId: number | null;
 }
 
 export const initialState: initialState = {
   imageId: null,
+  fileId: null,
   error: null,
   loading: false,
   isAction: false,
   isSuccess: false,
+  isActionFilePdf: false,
+  isSuccessFilePdf: false,
   message: '',
 };
 
@@ -25,7 +31,16 @@ const sliceOptions = {
   reducers: {
     resetImageId(state: any) {
       state.imageId = null;
+      state.fileId = null;
       state.isSuccess = false;
+    },
+    setImageId(state: any, action: any) {
+      state.imageId = action.payload;
+      state.isSuccess = true;
+    },
+    setFileId(state: any, action: any) {
+      state.fileId = action.payload;
+      state.isSuccessFilePdf = true;
     },
   },
   extraReducers: (builder: any) => {
@@ -44,11 +59,26 @@ const sliceOptions = {
       state.isSuccess = false;
       state.isAction = !state.isAction;
     });
+    builder.addCase(addPdfFileUpload.pending, (state: any) => {
+      state.loading = true;
+    });
+    builder.addCase(addPdfFileUpload.fulfilled, (state: any, action: any) => {
+      state.fileId = action.payload;
+      state.loading = false;
+      state.isSuccessFilePdf = true;
+      state.isAction = !state.isAction;
+    });
+    builder.addCase(addPdfFileUpload.rejected, (state: any) => {
+      state.fileId = null;
+      state.loading = false;
+      state.isSuccessFilePdf = false;
+      state.isAction = !state.isAction;
+    });
   },
 };
 
 const userSlice = createSlice(sliceOptions);
 
-export const { resetImageId } = userSlice.actions;
+export const { resetImageId, setImageId, setFileId } = userSlice.actions;
 
 export default userSlice.reducer;

@@ -5,12 +5,15 @@ import DeleteModal from '../../components/DeleteModal.tsx';
 import CustomTable from '../../components/Tables/CustomTable.tsx';
 import { deleteCourse, getAllCourses } from '../../slices/courses/thunk.ts';
 import moment from 'moment';
-import AddCourses from './AddCourses.tsx';
+import AddCourses, { getFileIcon } from './AddCourses.tsx';
 import { useTranslation } from 'react-i18next';
-import { formatNumber } from '../../helpers/utils.ts';
+import {
+  formatNumber,
+} from '../../helpers/utils.ts';
 import { MdDelete, MdEdit } from 'react-icons/md';
 import { resetImageId } from '../../slices/files/reducer.ts';
 import Image from '../../components/Image.tsx';
+import File from '../../components/File.tsx';
 
 const Courses = () => {
   const { t, i18n } = useTranslation();
@@ -53,11 +56,20 @@ const Courses = () => {
         title: t('teacher'),
       },
       {
-        key: 'files',
+        key: 'fileId',
+        title: t('file'),
+        render: (item: any) => (
+          <>
+            <File id={item?.fileId} />
+          </>
+        ),
+      },
+      {
+        key: 'imageId',
         title: t('image'),
         render: (item: any) => (
           <>
-            {item?.filesIds?.length > 0 && <Image item={item} key={item.id} />}
+            <Image width={80} height={50} id={item.imageId} key={item.id} />
           </>
         ),
       },

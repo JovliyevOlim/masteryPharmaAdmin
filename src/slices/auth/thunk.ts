@@ -11,7 +11,6 @@ export const loginUser =
         password: user.password,
       });
       var data: any = await response;
-      console.log(data);
       if (data) {
         localStorage.setItem('authUser', JSON.stringify(data));
         if (data) {
@@ -22,7 +21,6 @@ export const loginUser =
         }
       }
     } catch (error) {
-      console.error(error);
       dispatch(apiError(error));
       toast.error(error, { autoClose: 3000 });
     }

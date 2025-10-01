@@ -36,12 +36,13 @@ axios.interceptors.response.use(
         message = 'Internal Server Error';
         break;
       case 401:
+        window.location.href = '/login';
         message = error.response.data.message;
         break;
-      // case 403:
-      //   window.location.href = '/signIn';
-      //   message = 'Login qilish kerak';
-      //   break;
+      case 403:
+        window.location.href = '/login';
+        message = 'Login qilish kerak';
+        break;
       case 404:
         message = error.response.data.message;
         break;
@@ -134,6 +135,5 @@ const getLoggedinUser = () => {
     return JSON.parse(user);
   }
 };
-
 
 export { APIClient, setAuthorization, getLoggedinUser };

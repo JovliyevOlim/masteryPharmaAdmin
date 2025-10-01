@@ -47,5 +47,8 @@
   "no": "Yo‘q",
   "confirmDelete": "Siz bu {{item}} o‘chirmoqchimisiz?",
   "course": "kursni",
-  "image": "Rasm"
+  "image": "Rasm",
+  "file": "Fayl",
+  "max": "Maksimum 5 MB bo‘lishi kerak",
+  "upload": "Fayl yuklash"
 }

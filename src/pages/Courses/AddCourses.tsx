@@ -7,27 +7,58 @@ import moment from 'moment/moment';
 import { addNewCourses, updateCourse } from '../../slices/courses/thunk.ts';
 import { useTranslation } from 'react-i18next';
 import img from '../../images/default.png';
-import { baseUrl } from '../../helpers/api_helpers.ts';
-import { image } from 'html2canvas/dist/types/css/types/image';
-import { addFileUpload } from '../../slices/files/thunk.ts';
-import { resetImageId } from '../../slices/files/reducer.ts';
-import Image from '../../components/Image.tsx';
+import { addFileUpload, addPdfFileUpload } from '../../slices/files/thunk.ts';
+import {
+  resetImageId,
+  setFileId,
+  setImageId,
+} from '../../slices/files/reducer.ts';
+import {
+  fileSize,
+  getFileById,
+  getFileSizeInMB,
+  getImageUrl,
+  truncateFileName,
+} from '../../helpers/utils.ts';
+import { MdCancel, MdUpload } from 'react-icons/md';
+import { FaFileAlt, FaFileExcel, FaFilePdf, FaFileWord } from 'react-icons/fa';
+
+export const getFileIcon = (name: string) => {
+  const ext = name?.split('.').pop()?.toLowerCase();
+
+  switch (ext) {
+    case 'doc':
+    case 'docx':
+      return <FaFileWord className="text-blue-600 text-3xl" />;
+    case 'xls':
+    case 'xlsx':
+      return <FaFileExcel className="text-green-600 text-3xl" />;
+    case 'pdf':
+      return <FaFilePdf className="text-red-600 text-3xl" />;
+    default:
+      return <FaFileAlt className="text-gray-600 text-3xl" />;
+  }
+};
 
 const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
   const { t } = useTranslation();
   const dispatch: any = useDispatch();
-  const { isAction, isSuccess, loading } = useSelector(
-    (state: any) => state.Course,
-  );
+  const { isAction, isSuccess } = useSelector((state: any) => state.Course);
   const {
     isAction: isActionFile,
     isSuccess: isSuccessFile,
     loading: isLoadingFile,
     imageId,
+    fileId,
+    isSuccessFilePdf,
   } = useSelector((state: any) => state.FileUpload);
 
+  const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<any>(null);
+
+  const [previewFile, setPreviewFile] = useState<any>(null);
+  const [selectedPdfFile, setSelectedPdfFile] = useState<any>(null);
   const handleImageChange = async (event: any) => {
     const files = event.target.files;
     setSelectedFiles(files);
@@ -37,13 +68,26 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
     }
   };
 
+  const handleFileChange = async (event: any) => {
+    const selected = event.target.files?.[0];
+    setSelectedPdfFile(selected);
+    setPreviewFile(selected);
+  };
+
   const imageUpload = () => {
-    if (selectedFiles && selectedFiles.length > 0) {
+    const imageData = Array.from(selectedFiles);
+    const formData = new FormData();
+    imageData.forEach((file: any) => {
+      formData.append('file', file);
+    });
+    dispatch(addFileUpload(formData));
+  };
+
+  const fileUpload = () => {
+    if (selectedPdfFile) {
       const formData = new FormData();
-      Array.from(selectedFiles).forEach((file: any) => {
-        formData.append('file', file);
-      });
-      dispatch(addFileUpload(formData));
+      formData.append('file', selectedPdfFile);
+      dispatch(addPdfFileUpload(formData));
     }
   };
 
@@ -63,6 +107,9 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
     setItem(null);
     setPreview('');
     setSelectedFiles([]);
+    setPreviewFile(null);
+    setSelectedPdfFile(null);
+    setLoading(false);
   }
 
   useEffect(() => {
@@ -76,6 +123,11 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
         price: item?.price,
         online: item?.online,
       });
+      setPreview(item?.imageId ? getImageUrl(item?.imageId) : null);
+      if (item?.imageId) dispatch(setImageId(item?.imageId));
+      if (item?.fileId) dispatch(setFileId(item?.fileId));
+      if (item?.fileId)
+        getFileById(item?.fileId).then((response) => setPreviewFile(response));
     } else {
       setInitialValues({
         title: '',
@@ -103,7 +155,17 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
       price: Yup.string().required(t('priceRequired')),
     }),
     onSubmit: () => {
-      imageUpload();
+      setLoading(true);
+      if (selectedPdfFile || (selectedFiles && selectedFiles.length > 0)) {
+        if (selectedPdfFile) {
+          fileUpload();
+        }
+        if (selectedFiles && selectedFiles.length > 0) {
+          imageUpload();
+        }
+      } else {
+        handleCourse();
+      }
     },
   });
 
@@ -114,7 +176,8 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
           ...validation.values,
           startDateTime: moment(validation.values.startDateTime).toISOString(),
           id: item.id,
-          fileIds: [imageId],
+          imageId: imageId,
+          fileId: fileId,
         }),
       );
     } else {
@@ -122,14 +185,15 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
         addNewCourses({
           ...validation.values,
           startDateTime: moment(validation.values.startDateTime).toISOString(),
-          fileIds: [imageId],
+          imageId: imageId,
+          fileId: fileId,
         }),
       );
     }
   }
 
   useEffect(() => {
-    if (isSuccessFile) {
+    if (isSuccessFile && isSuccessFilePdf) {
       handleCourse();
     }
   }, [isActionFile]);
@@ -138,9 +202,6 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
 
   useEffect(() => {
     if (isSuccess) {
-      setModalOpen(false);
-      validation.resetForm();
-      setItem(null);
       setInitialValues({
         title: '',
         description: '',
@@ -151,8 +212,14 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
         online: false,
       });
       dispatch(resetImageId());
+      setModalOpen(false);
+      validation.resetForm();
+      setItem(null);
       setPreview('');
       setSelectedFiles([]);
+      setPreviewFile(null);
+      setSelectedPdfFile(null);
+      setLoading(false);
     }
   }, [dispatch, isAction]);
 
@@ -182,18 +249,14 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
               <div className={'sm:flex gap-3'}>
                 <div className="z-30 mx-auto  bg-white/20 p-1 backdrop-blur">
                   <div className="relative  drop-shadow-2">
-                    {preview || item?.filesIds.length === 0 ? (
-                      <img
-                        className={'rounded-4 object-cover'}
-                        width={320}
-                        height={320}
-                        src={preview ? preview : img}
-                        alt="profile"
-                      />
-                    ) : (
-                      <Image item={item} />
-                    )}
-
+                    <img
+                      className={'rounded-4 overflow-hidden'}
+                      style={{ objectFit: 'cover' }}
+                      width={320}
+                      height={320}
+                      src={preview ? preview : img}
+                      alt="profile"
+                    />
                     <label
                       htmlFor="profile"
                       className="absolute bottom-0 right-0 flex h-8.5 w-8.5 cursor-pointer items-center justify-center rounded-full bg-primary text-white hover:bg-opacity-90 sm:bottom-2 sm:right-2"
@@ -222,6 +285,7 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
                       <input
                         type="file"
                         name="profile"
+                        accept="image/*"
                         id="profile"
                         className="sr-only"
                         onChange={handleImageChange}
@@ -230,6 +294,64 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
                   </div>
                 </div>
               </div>
+              {selectedFiles &&
+                parseInt(getFileSizeInMB(selectedFiles[0]?.size)) >= 5 && (
+                  <p className={'text-center  text-danger'}>{t('max')}</p>
+                )}
+              <div className={'sm:flex gap-3 justify-center'}>
+                <label
+                  htmlFor="pdf"
+                  className="flex justify-center sm:w-auto items-center rounded-md bg-green-700 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-green-800 hover:bg-green-600"
+                >
+                  {t('upload')} <MdUpload size={20} />
+                </label>
+                <input
+                  className={'hidden'}
+                  type="file"
+                  name="profile"
+                  id="pdf"
+                  accept=".doc,.docx,.xls,.xlsx,.pdf"
+                  onChange={handleFileChange}
+                />
+              </div>
+              {previewFile && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className={'flex items-center gap-2 '}>
+                      {getFileIcon(previewFile?.name)}
+                      <span>
+                        {previewFile
+                          ? `${truncateFileName(previewFile.name, 25)} (${
+                              previewFile?.size
+                                ? getFileSizeInMB(previewFile?.size)
+                                : getFileSizeInMB(
+                                    fileSize(
+                                      previewFile?.data || previewFile?.size,
+                                      previewFile?.type,
+                                    ),
+                                  )
+                            } MB)`
+                          : ''}
+                      </span>
+                    </div>
+                    <div>
+                      <MdCancel
+                        size={20}
+                        onClick={() => {
+                          setSelectedPdfFile(null);
+                          setPreviewFile(null);
+                        }}
+                        className={'text-danger'}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              {selectedPdfFile &&
+                parseInt(getFileSizeInMB(selectedPdfFile?.size)) >= 5 && (
+                  <p className={'text-center  text-danger'}>{t('max')}</p>
+                )}
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -453,9 +575,29 @@ const AddCourses = ({ modalOpen, setModalOpen, item, setItem }: any) => {
                   <button
                     disabled={loading}
                     type="submit"
-                    className="flex justify-center rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-blue-800 hover:bg-blue-600 sm:mt-0 sm:w-auto"
+                    className="flex justify-center items-center gap-2 rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-blue-800 hover:bg-blue-600 sm:mt-0 sm:w-auto"
                   >
                     {t('save')}
+                    {loading && (
+                      <svg
+                        aria-hidden="true"
+                        className="w-4 h-4 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+                        viewBox="0 0 100 101"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                          fill="currentColor"
+                        />
+                        <path
+                          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                          fill="currentFill"
+                        />
+                      </svg>
+                    )}
+
+                    <span className="sr-only">Loading...</span>
                   </button>
                 </div>
               </form>
