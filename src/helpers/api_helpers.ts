@@ -1,7 +1,7 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 
-export const baseUrl = 'https://mastery-pharma.uz/api';
-// export const baseUrl = 'http://95.46.96.160:8081/api';
+// export const baseUrl = 'https://mastery-pharma.uz/api';
+export const baseUrl = 'http://95.46.96.160:8081/api';
 axios.defaults.baseURL = baseUrl;
 
 export const getToken = (): string | null => {
